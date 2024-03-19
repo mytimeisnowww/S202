@@ -1,0 +1,27 @@
+[
+    {
+        "_id" : "2022-03-13" , 
+        "total_vendas" : 71.95 , 
+        "total_produtos" : 15
+    } , 
+    {
+        "_id" : "2022-03-14" , 
+        "total_vendas" : 130.02 , 
+        "total_produtos" : 28
+    } , 
+    {
+        "_id" : "2022-03-15" , 
+        "total_vendas" : 41.32 , 
+        "total_produtos" : 8
+    } , 
+    {
+        "_id" : "2022-03-16" , 
+        "total_vendas" : 37.43 , 
+        "total_produtos" : 7
+    } , 
+    {
+        "_id" : "2022-03-17" , 
+        "total_vendas" : 22.1 , 
+        "total_produtos" : 6
+    }
+]
