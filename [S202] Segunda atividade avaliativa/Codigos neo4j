@@ -1,0 +1,47 @@
+CREATE (:Pessoa:Pai:Engenheiro {nome: 'João', sexo: 'masculino', idade: 45}),
+       (:Pessoa:Mãe:Advogada {nome: 'Maria', sexo: 'feminino', idade: 42}),
+       (:Pessoa:Filho:Estudante {nome: 'Pedro', sexo: 'masculino', idade: 20}),
+       (:Pessoa:Filha:Estudante {nome: 'Ana', sexo: 'feminino', idade: 18}),
+       (:Pessoa:Filho:Estudante {nome: 'Lucas', sexo: 'masculino', idade: 15}),
+       (:Pessoa:Filho {nome: 'Miguel', sexo: 'masculino', idade: 10}),
+       (:Pessoa:Filha {nome: 'Laura', sexo: 'feminino', idade: 8}),
+       (:Pessoa:Avô:Aposentado {nome: 'José', sexo: 'masculino', idade: 70}),
+       (:Pessoa:Avó:Aposentada {nome: 'Ana', sexo: 'feminino', idade: 68}),
+       (:Pessoa:Tio {nome: 'Carlos', sexo: 'masculino', idade: 50})
+CREATE (:Pet:Cachorro {nome: 'Rex', idade: 3}),
+       (:Pet:Gato {nome: 'Whiskers', idade: 5})
+
+MATCH (pai:Pessoa {nome: 'João'}), (mae:Pessoa {nome: 'Maria'})
+CREATE (pai)-[:PAI_DE]->(:Pessoa {nome: 'Pedro'}),
+       (pai)-[:PAI_DE]->(:Pessoa {nome: 'Ana'}),
+       (pai)-[:PAI_DE]->(:Pessoa {nome: 'Lucas'}),
+       (mae)-[:PAI_DE]->(:Pessoa {nome: 'Pedro'}),
+       (mae)-[:PAI_DE]->(:Pessoa {nome: 'Ana'}),
+       (mae)-[:PAI_DE]->(:Pessoa {nome: 'Lucas'}),
+       (pai)-[:CONJUGE {data_casamento: '2000-05-15'}]->(mae)
+WITH pai, mae
+
+MATCH (avô:Pessoa {nome: 'José'}), (avo:Pessoa {nome: 'Ana'})
+CREATE (avô)-[:PAI_DE]->(pai),
+       (avo)-[:PAI_DE]->(mae)
+
+WITH avô, avo, pai, mae
+
+MATCH (pai)-[:PAI_DE]->(irmao:Pessoa {nome: 'Pedro'})
+CREATE (pai)-[:IRMÃO_DE]->(irmao),
+       (mae)-[:IRMÃO_DE]->(irmao)
+
+WITH avô, avo, pai, mae
+
+MATCH (mae)-[:PAI_DE]->(filha:Pessoa {nome: 'Ana'})
+CREATE (mae)-[:IRMÃO_DE]->(filha)
+
+WITH avô, avo, pai, mae
+
+MATCH (pai)-[:PAI_DE]->(filho:Pessoa {nome: 'Lucas'})
+CREATE (pai)-[:IRMÃO_DE]->(filho),
+       (mae)-[:IRMÃO_DE]->(filho)
+
+MATCH (pessoa:Pessoa), (pet:Pet)
+WHERE pessoa.nome IN ['João', 'Maria', 'Pedro', 'Ana', 'Lucas'] AND pet.nome IN ['Rex', 'Whiskers']
+CREATE (pessoa)-[:TEM_COMO_ANIMAL_DE_ESTIMACAO]->(pet)
