@@ -1,0 +1,49 @@
+Questão 01:
+
+1: match(n)
+   return(n)
+
+2: MATCH (g:Game)
+   WHERE g.ano > 2012
+   RETURN g;
+
+3: MATCH (g:Game)
+   WHERE g.genero = 'Terror'
+   RETURN g;
+
+4: MATCH (g:Game)<-[r:JOGOU]-()
+   WHERE r.nota >= 7
+   RETURN g;
+
+
+Questão 02:
+
+1: CREATE(g:Game{titulo:'Dota 2',genero:'MOBA',ano:2013});
+   CREATE(g:Game{titulo:'Xcom 2',genero:'Strategy',ano:2016});
+   CREATE(g:Game{titulo:'Outlast 2',genero:'Terror',ano:2017});
+   CREATE(g:Game{titulo:'Counter-Strike 2',genero:'Shooter',ano:2023});
+
+2: CREATE(j:Jurado{nome:'João Vitor'});
+   CREATE(j:Jurado{nome:'Marcos'});
+   CREATE(j:Jurado{nome:'Silas'});
+
+2: MATCH(j:Jurado{nome:'João Vitor'}),(g:Game{titulo:'Xcom 2'})
+   CREATE(j)-[:JOGOU{nota:10, horas:86}]->(g);
+
+   MATCH(j:Jurado{nome:'João Vitor'}),(g:Game{titulo:'Counter-Strike 2'})
+   CREATE(j)-[:JOGOU{nota:10, horas: 1520}]->(g);
+
+   MATCH(j:Jurado{nome:'Marcos'}),(g:Game{titulo:'Outlast 2'})
+   CREATE(j)-[:JOGOU{nota:6, horas: 20}]->(g);
+
+   MATCH(j:Jurado{nome:'Marcos'}),(g:Game{titulo:'Dota 2'})
+   CREATE(j)-[:JOGOU{nota:8, horas: 200}]->(g);
+
+   MATCH(j:Jurado{nome:'Silas'}),(g:Game{titulo:'Dota 2'})
+   CREATE(j)-[:JOGOU{nota:9, horas: 100}]->(g);
+
+   MATCH(j:Jurado{nome:'Silas'}),(g:Game{titulo:'Outlast 2'})
+   CREATE(j)-[:JOGOU{nota:10, horas: 120}]->(g);
+
+   MATCH(j:Jurado{nome:'Silas'}),(g:Game{titulo:'Xcom 2'})
+   CREATE(j)-[:JOGOU{nota:5, horas: 20}]->(g);
