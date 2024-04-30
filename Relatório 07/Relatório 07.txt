@@ -1,0 +1,55 @@
+Agregações:
+
+MATCH (a:Airport)
+RETURN count(a) AS total_aeroportos
+
+MATCH (a:Airport)
+RETURN avg(a.altitude) AS altitude_media
+
+MATCH (a:Airport)
+RETURN MIN(a.altitude) AS altitude_minima, MAX(a.altitude) As altitude_maxima
+
+MATCH (a:Airport)
+RETURN sum(a.runways) AS total_pistas_pouso
+
+MATCH (a:Airport)
+RETURN a.city, COLLECT(a.descr) AS nomes_aeroportos_por_cidade
+
+Funções Matemáticas:
+
+MATCH (a1:Airport {descr: "Hartsfield - Jackson Atlanta International Airport"}),
+      (a2:Airport {descr: "Anchorage Ted Stevens"})
+RETURN ABS(a1.altitude - a2.altitude) AS diferenca_altitudes_absoluta
+
+MATCH (a:Airport)
+RETURN ROUND(AVG(a.altitude), 2) AS media_altitudes_arredondada
+
+MATCH (a:Airport)
+RETURN a.descr, RAND() * a.altitude AS altitude_aleatoria
+LIMIT 1
+
+MATCH (a1:Airport {descr: "Hartsfield - Jackson Atlanta International Airport"}),
+      (a2:Airport {descr: "Austin Bergstrom International Airport"})
+RETURN ABS(a1.longest - a2.longest) AS diferenca_longest_absoluta
+
+MATCH (a1:Airport {descr: "Hartsfield - Jackson Atlanta International Airport"}),
+      (a2:Airport {descr: "Austin Bergstrom International Airport"})
+RETURN ABS(a1.longest - a2.longest) AS diferenca_tamanho_pistas
+
+Funções de String:
+
+MATCH (a:Airport)
+RETURN TOUPPER(a.descr) AS nome_maiusculo, LEFT(a.descr, 3) AS tres_primeiros_caracteres
+
+MATCH (a:Airport)
+RETURN REVERSE(a.descr) AS nome_invertido
+
+MATCH (a:Airport)
+RETURN SPLIT(a.descr, ' ')[0] AS primeira_palavra
+
+MATCH (a:Airport)
+WHERE a.descr CONTAINS 'International'
+RETURN a.descr AS nome_aeroporto
+
+MATCH (a:Airport)
+RETURN REPLACE(a.descr, 'International', 'Int\'l') AS nome_aeroporto_modificado
