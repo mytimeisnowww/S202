@@ -1,0 +1,176 @@
+QUESTÃO 1)
+
+
+
+import redis
+
+# Configurando a conexão com o Redis
+r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+
+def questao_1(users):
+    for user in users:
+        r.hset(f"user:{user['id']}", mapping=user)
+    
+    stored_users = []
+    for user in users:
+        stored_user = r.hgetall(f"user:{user['id']}")
+        stored_users.append(stored_user)
+    
+    return stored_users
+
+def test_questao_1():
+    users = [
+        {"id": '1', "nome": "Maria", "email": "maria@g.com", "token": "maria123"},
+        {"id": '2', "nome": "Pedro", "email": "pedro@g.com", "token": "pedro123"},
+        {"id": '3', "nome": "Ana", "email": "ana@g.com", "token": "ana123"},
+        {"id": '4', "nome": "Lucas", "email": "lucas@g.com", "token": "lucas123"},
+    ]
+    
+    assert users == questao_1(users)
+
+
+
+QUESTÃO 2)
+
+
+
+def questao_2(interests):
+    for interest in interests:
+        user_id = interest['usuario']
+        r.delete(f"interests:{user_id}")
+        for item in interest['interesses']:
+            r.zadd(f"interests:{user_id}", {item['interesse']: item['score']})
+    
+    stored_interests = []
+    for interest in interests:
+        user_id = interest['usuario']
+        interests_set = r.zrangebyscore(f"interests:{user_id}", '-inf', '+inf', withscores=True)
+        stored_interests.append({"usuario": user_id, "interesses": [{"interesse": i[0], "score": i[1]} for i in interests_set]})
+    
+    return stored_interests
+
+def test_questao_2():
+    interests = [
+        {"usuario": 1, "interesses": [{"interesse": "moda", "score": 10}, {"interesse": "esportes", "score": 8}]},
+        {"usuario": 2, "interesses": [{"interesse": "tecnologia", "score": 9}, {"interesse": "moda", "score": 7}]},
+        {"usuario": 3, "interesses": [{"interesse": "foco", "score": 8}, {"interesse": "ciência", "score": 9}]},
+        {"usuario": 4, "interesses": [{"interesse": "entretenimento", "score": 7}, {"interesse": "política", "score": 6}]},
+    ]
+    
+    assert interests == questao_2(interests)
+
+
+
+QUESTÃO 03)
+
+
+
+from datetime import datetime, timedelta
+
+def questao_3(posts):
+    cutoff_time = datetime.now() - timedelta(hours=5)
+    for post in posts:
+        post_time = datetime.strptime(post['data_hora'], '%Y-%m-%d %H:%M:%S')
+        if post_time >= cutoff_time:
+            r.hmset(f"post:{post['id']}", post)
+            r.expireat(f"post:{post['id']}", int(post_time.timestamp() + 18000))
+    
+    stored_posts = []
+    for post in posts:
+        post_time = datetime.strptime(post['data_hora'], '%Y-%m-%d %H:%M:%S')
+        if post_time >= cutoff_time:
+            stored_post = r.hgetall(f"post:{post['id']}")
+            stored_posts.append(stored_post)
+    
+    return stored_posts
+
+def test_questao_3():
+    posts = [
+        {"id": '345', "autor":"ana@g.com", "data_hora": "2024-06-10 14:53:00", "conteudo": "No último mês pesquisadores testaram três novos medicamentos para ajudar aumentar o foco.", "palavras_chave": "neurociências, tecnologia, foco, medicamento" },
+        {"id": '350', "autor":"lucas@g.com", "data_hora": "2024-06-10 19:00:01", "conteudo": "Aprenda uma receita rápida de onion rings supoer crocantes.", "palavras_chave": "culinária, receita, rápido, crocante" },
+        {"id": '351', "autor":"pedro@g.com", "data_hora": "2024-06-10 19:30:00", "conteudo": "Se liga nessa lista de jogadores que vão mudar de time no próximo mês!", "palavras_chave": "esportes, futebol, transferência, jogadores" },
+        {"id": '352', "autor":"meme_e_cia@g.com", "data_hora": "2024-06-10 19:58:33", "conteudo": "Você prefere compartilhar a nossa página agora ou daqui cinco minutos?", "palavras_chave": "entretenimento, engraçado, viral, meme" },
+        {"id": '353', "autor":"rnd_hub@g.com", "data_hora": "2024-06-10 19:59:59", "conteudo": "A polêmica pesquisa de V. Damasco sobre ciência do comportamente acaba de ser publicada.", "palavras_chave": "comportamento, ciência, pesquisa, damasco" }
+    ]
+
+    assert posts == sorted(questao_3(posts), key=lambda d: d['id'])
+
+
+
+QUESTÃO 04)
+
+
+
+def questao_4(user_id):
+    user_interests = r.zrangebyscore(f"interests:{user_id}", '-inf', '+inf', withscores=True)
+    user_interests_dict = {interest: score for interest, score in user_interests}
+
+    post_keys = r.keys("post:*")
+    posts = [r.hgetall(post_key) for post_key in post_keys]
+
+    post_scores = []
+    for post in posts:
+        post_score = sum(user_interests_dict.get(keyword, 0) for keyword in post['palavras_chave'].split(', '))
+        post_scores.append((post, post_score))
+
+    sorted_posts = sorted(post_scores, key=lambda x: x[1], reverse=True)
+    sorted_posts_content = [post[0]['conteudo'] for post in sorted_posts]
+
+    return sorted_posts_content
+
+def test_questao_4():
+    user_id = 3
+
+    output = [
+        "No último mês pesquisadores testaram três novos medicamentos para ajudar aumentar o foco.",
+        "Aprenda uma receita rápida de onion rings supoer crocantes.",
+        "Se liga nessa lista de jogadores que vão mudar de time no próximo mês!",
+        "A dica de hoje envolve os novos delineadores da linha Rare Beauty",
+        "Eu quando acho a chuteira que perdi na última pelada...",
+        "Você prefere compartilhar a nossa página agora ou daqui cinco minutos?",
+        "A polêmica pesquisa de V. Damasco sobre ciência do comportamente acaba de ser publicada."               
+    ]
+
+    assert output == questao_4(user_id)
+
+
+
+QUESTÃo 05)
+
+
+
+def questao_5(user_views, user_id):
+    for view in user_views:
+        r.delete(f"views:{view['usuario']}")
+        for post_id in view['visualizado']:
+            r.sadd(f"views:{view['usuario']}", post_id)
+
+    viewed_posts_ids = r.smembers(f"views:{user_id}")
+    viewed_posts_ids = [int(post_id) for post_id in viewed_posts_ids]
+
+    post_keys = r.keys("post:*")
+    posts = [r.hgetall(post_key) for post_key in post_keys]
+
+    not_viewed_posts = [post for post in posts if int(post['id']) not in viewed_posts_ids]
+
+    return [post['conteudo'] for post in not_viewed_posts]
+
+def test_questao_5():
+    user_id = 3
+    user_views = [
+        {"usuario": 1, "visualizado": [345, 350, 353]},
+        {"usuario": 2, "visualizado": [350, 351]},
+        {"usuario": 3, "visualizado": [345, 351, 352, 353]},
+        {"usuario": 4, "visualizado": []}
+    ]
+
+    output = [
+        "Aprenda uma receita rápida de onion rings supoer crocantes.",
+        "A dica de hoje envolve os novos delineadores da linha Rare Beauty",
+        "Eu quando acho a chuteira que perdi na última pelada..."
+    ]
+
+    assert output == questao_5(user_views, user_id)
+
+
+
